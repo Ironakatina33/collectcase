@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { Creature, Rarity } from "@/lib/game/types";
 import { ELEMENT_EMOJI, ELEMENT_LABELS, RARITY_LABELS } from "@/lib/game/types";
+import { MonsterSprite } from "@/components/game/monster-sprite";
 
 const RARITY_GLOW: Record<Rarity, string> = {
   common: "glow-common",
@@ -52,9 +53,9 @@ export function CreatureCard({
   count
 }: Props) {
   const sizes = {
-    sm: { card: "w-32 h-44", emoji: "text-3xl", title: "text-xs", chip: "text-[10px]" },
-    md: { card: "w-44 h-60", emoji: "text-5xl", title: "text-sm", chip: "text-xs" },
-    lg: { card: "w-56 h-80", emoji: "text-7xl", title: "text-base", chip: "text-xs" }
+    sm: { card: "w-32 h-44", title: "text-xs", chip: "text-[10px]", sprite: "sm" as const },
+    md: { card: "w-44 h-60", title: "text-sm", chip: "text-xs", sprite: "md" as const },
+    lg: { card: "w-56 h-80", title: "text-base", chip: "text-xs", sprite: "lg" as const }
   }[size];
 
   const isHolo = creature.rarity === "legendary" || creature.rarity === "mythic";
@@ -63,13 +64,14 @@ export function CreatureCard({
     <button
       onClick={onClick}
       className={cn(
-        "group relative shrink-0 rounded-xl border-2 transition-all duration-200",
-        "bg-gradient-to-b from-black/30 to-black/60",
+        "group relative shrink-0 rounded-2xl border-2 transition-all duration-250",
+        "bg-gradient-to-b from-black/25 via-black/45 to-black/70",
         sizes.card,
         RARITY_BORDER[creature.rarity],
         RARITY_GLOW[creature.rarity],
-        onClick && "cursor-pointer hover:-translate-y-1 hover:scale-[1.03]",
+        onClick && "cursor-pointer hover:-translate-y-1.5 hover:scale-[1.03]",
         selected && "ring-2 ring-fuchsia-400 ring-offset-2 ring-offset-background scale-[1.03]",
+        "card-texture",
         className
       )}
       type="button"
@@ -107,12 +109,14 @@ export function CreatureCard({
           </span>
         </div>
 
-        {/* Emoji art */}
+        {/* Creature sprite */}
         <div className="flex-1 flex items-center justify-center">
-          <div className={cn("drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]", sizes.emoji,
-            "transition-transform group-hover:scale-110 duration-300")}>
-            {shiny ? "✨" : ""}{creature.emoji}{shiny ? "✨" : ""}
-          </div>
+          <MonsterSprite
+            creature={creature}
+            size={sizes.sprite}
+            shiny={shiny}
+            className="transition-transform duration-300 group-hover:scale-110"
+          />
         </div>
 
         {/* Name + level */}

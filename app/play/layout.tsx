@@ -46,7 +46,9 @@ export default async function PlayLayout({ children }: { children: React.ReactNo
           gems={profile.gems}
           level={profile.level}
         />
-        <div className="flex-1 pb-20 lg:pb-0">{children}</div>
+        <main className="flex-1 pb-24 lg:pb-8 px-3 sm:px-5 lg:px-7 py-3 sm:py-5">
+          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+        </main>
       </div>
     </div>
   );

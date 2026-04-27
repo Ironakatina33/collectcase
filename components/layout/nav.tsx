@@ -51,17 +51,17 @@ export function Nav({ username, coins, gems, level, xp }: NavProps) {
   }
 
   return (
-    <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-white/5 bg-black/30 backdrop-blur-xl">
-      <Link href="/play" className="px-6 py-5 border-b border-white/5">
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-white/10 glass-panel">
+      <Link href="/play" className="px-6 py-5 border-b border-white/10 aurora-strip">
         <div className="font-display text-2xl font-bold gradient-text">Mythara</div>
         <div className="text-[11px] text-muted-foreground -mt-0.5">Gardiens des Élements</div>
       </Link>
 
-      <div className="px-4 py-4 border-b border-white/5">
+      <div className="px-4 py-4 border-b border-white/10">
         <div className="text-sm font-semibold">{username}</div>
         <div className="text-xs text-muted-foreground mb-2">Niveau {level}</div>
-        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-fuchsia-500 to-violet-500" style={{ width: `${pct}%` }} />
+        <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-violet-500" style={{ width: `${pct}%` }} />
         </div>
         <div className="mt-3 flex gap-3 text-xs">
           <span className="inline-flex items-center gap-1 text-amber-300">
@@ -73,7 +73,7 @@ export function Nav({ username, coins, gems, level, xp }: NavProps) {
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-3 space-y-1">
+      <nav className="flex-1 px-3 py-3 space-y-1.5">
         {items.map((it) => {
           const active = pathname === it.href || (it.href !== "/play" && pathname.startsWith(it.href));
           const Icon = it.icon;
@@ -82,13 +82,13 @@ export function Nav({ username, coins, gems, level, xp }: NavProps) {
               key={it.href}
               href={it.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all",
                 active
-                  ? "bg-gradient-to-r from-fuchsia-500/20 to-violet-500/10 text-foreground border border-fuchsia-500/30"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]"
+                  ? "bg-gradient-to-r from-fuchsia-500/25 via-violet-500/15 to-cyan-500/20 text-foreground border border-fuchsia-400/40 shadow-[0_8px_20px_rgba(168,85,247,0.22)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/[0.05] border border-transparent"
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className={cn("h-4 w-4", active && "text-fuchsia-300")} />
               <span>{it.label}</span>
             </Link>
           );
@@ -97,7 +97,7 @@ export function Nav({ username, coins, gems, level, xp }: NavProps) {
 
       <button
         onClick={logout}
-        className="flex items-center gap-2 px-5 py-4 text-sm text-muted-foreground hover:text-foreground border-t border-white/5 transition-colors"
+        className="flex items-center gap-2 px-5 py-4 text-sm text-muted-foreground hover:text-foreground border-t border-white/10 transition-colors"
       >
         <LogOut className="h-4 w-4" /> Déconnexion
       </button>
@@ -109,14 +109,14 @@ export function MobileNav({ username, coins, gems, level }: Omit<NavProps, "xp">
   const pathname = usePathname();
   return (
     <>
-      <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-white/5 bg-black/60 backdrop-blur">
+      <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-white/10 glass-panel">
         <Link href="/play" className="font-display text-xl font-bold gradient-text">Mythara</Link>
         <div className="flex items-center gap-3 text-xs">
           <span className="inline-flex items-center gap-1 text-amber-300"><Coins className="h-3.5 w-3.5" /> {formatNumber(coins)}</span>
           <span className="inline-flex items-center gap-1 text-cyan-300"><Gem className="h-3.5 w-3.5" /> {gems}</span>
         </div>
       </header>
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-black/80 backdrop-blur border-t border-white/5">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 glass-panel border-t border-white/10">
         <div className="flex justify-around py-1">
           {items.slice(0, 6).map((it) => {
             const Icon = it.icon;
