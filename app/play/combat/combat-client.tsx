@@ -42,6 +42,13 @@ const DIFFICULTIES: { id: Difficulty; label: string; sub: string }[] = [
   { id: "elite", label: "Élite", sub: "Niv. 30-50 · 420 pièces" }
 ];
 
+const DIFF_OFFSET: Record<Difficulty, string> = {
+  easy: "adversaires légèrement plus faibles",
+  normal: "adversaires proches de ton niveau",
+  hard: "adversaires plus forts",
+  elite: "adversaires nettement plus forts"
+};
+
 export function CombatClient({ cards, opponents }: { cards: UC[]; opponents: Opponent[] }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("pve");
@@ -89,9 +96,13 @@ export function CombatClient({ cards, opponents }: { cards: UC[]; opponents: Opp
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="font-display text-3xl md:text-4xl font-bold">Arène</h1>
-        <p className="text-sm text-muted-foreground">Combats stratégiques pour XP, pièces et gloire.</p>
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-5 sm:p-7 aurora-strip">
+        <div className="absolute -top-16 -right-12 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <div className="absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="relative">
+          <h1 className="font-display text-3xl md:text-4xl font-bold">Arène</h1>
+          <p className="text-sm text-muted-foreground">Combats stratégiques pour XP, pièces et gloire.</p>
+        </div>
       </header>
 
       {/* Mode toggle */}
@@ -143,6 +154,11 @@ export function CombatClient({ cards, opponents }: { cards: UC[]; opponents: Opp
             <CardContent className="space-y-3">
               {mode === "pve" ? (
                 <div className="space-y-2">
+                  {myCard && (
+                    <p className="text-xs text-muted-foreground pb-1">
+                      Créature sélectionnée : <span className="text-foreground font-semibold">Niv. {myCard.level}</span> — {DIFF_OFFSET[difficulty]}
+                    </p>
+                  )}
                   {DIFFICULTIES.map((d) => (
                     <button
                       key={d.id}

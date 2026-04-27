@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Filter, Search, X, Trash2, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,7 @@ interface UserCard {
 const ELEMENTS: Element[] = ["fire", "water", "plant", "thunder", "shadow", "light"];
 
 export function CollectionClient({ cards }: { cards: UserCard[] }) {
-  const router = useRouter();
+  const [cardsState, setCardsState] = useState(cards);
   const [search, setSearch] = useState("");
   const [elem, setElem] = useState<Element | "all">("all");
   const [rarity, setRarity] = useState<Rarity | "all">("all");
@@ -38,7 +37,7 @@ export function CollectionClient({ cards }: { cards: UserCard[] }) {
   const [pending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
-    return cards.filter((c) => {
+    return cardsState.filter((c) => {
       const base = CREATURES_BY_ID[c.creature_id];
       if (!base) return false;
       if (elem !== "all" && base.element !== elem) return false;
@@ -46,7 +45,7 @@ export function CollectionClient({ cards }: { cards: UserCard[] }) {
       if (search && !base.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [cards, search, elem, rarity]);
+  }, [cardsState, search, elem, rarity]);
 
   const grouped = useMemo(() => {
     if (!groupByCreature) return null;
@@ -71,11 +70,11 @@ export function CollectionClient({ cards }: { cards: UserCard[] }) {
   const totalValue = useMemo(() => {
     let v = 0;
     for (const id of selected) {
-      const c = cards.find((cc) => cc.id === id);
+      const c = cardsState.find((cc) => cc.id === id);
       if (c) v += SELL_PRICE[c.rarity as Rarity] ?? 0;
     }
     return v;
-  }, [selected, cards]);
+  }, [selected, cardsState]);
 
   function toggle(id: string) {
     setSelected((s) => {
@@ -86,7 +85,7 @@ export function CollectionClient({ cards }: { cards: UserCard[] }) {
   }
 
   function selectByRarity(r: Rarity) {
-    setSelected(new Set(cards.filter((c) => c.rarity === r && !c.locked).map((c) => c.id)));
+    setSelected(new Set(cardsState.filter((c) => c.rarity === r && !c.locked).map((c) => c.id)));
   }
 
   async function sellSelected() {
@@ -103,20 +102,24 @@ export function CollectionClient({ cards }: { cards: UserCard[] }) {
         return;
       }
       toast.success(`+${formatNumber(j.total)} pièces obtenues (${j.count} cartes)`);
+      setCardsState((prev) => prev.filter((c) => !selected.has(c.id)));
       setSelected(new Set());
       setConfirm(false);
-      router.refresh();
     });
   }
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-5 sm:p-7 aurora-strip">
+        <div className="absolute -top-16 -right-12 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <div className="absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl md:text-4xl font-bold">Mythadex</h1>
           <p className="text-sm text-muted-foreground">
-            {cards.length} cartes · {new Set(cards.map((c) => c.creature_id)).size}/42 espèces
+            {cardsState.length} cartes · {new Set(cardsState.map((c) => c.creature_id)).size}/42 espèces
           </p>
+        </div>
         </div>
       </header>
 
@@ -248,13 +251,13 @@ export function CollectionClient({ cards }: { cards: UserCard[] }) {
           <h2 className="font-display text-xl font-bold mb-1">À débloquer</h2>
           <p className="text-sm text-muted-foreground mb-4">Espèces qu'il te reste à capturer.</p>
           <div className="flex flex-wrap gap-2">
-            {CREATURES.filter((c) => !cards.some((uc) => uc.creature_id === c.id)).map((c) => (
+            {CREATURES.filter((c) => !cardsState.some((uc) => uc.creature_id === c.id)).map((c) => (
               <div key={c.id} className="rounded-lg border border-white/5 bg-black/30 p-2 w-24 text-center opacity-60 grayscale">
                 <div className="text-3xl">❔</div>
                 <div className="text-[10px] text-muted-foreground truncate">{c.name}</div>
               </div>
             ))}
-            {CREATURES.every((c) => cards.some((uc) => uc.creature_id === c.id)) && (
+            {CREATURES.every((c) => cardsState.some((uc) => uc.creature_id === c.id)) && (
               <Badge variant="success">Mythadex complet ! ✨</Badge>
             )}
           </div>

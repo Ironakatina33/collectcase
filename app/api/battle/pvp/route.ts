@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { CREATURES_BY_ID } from "@/lib/game/creatures";
 import { buildBattler, simulateBattle } from "@/lib/game/combat";
+import { clamp } from "@/lib/utils";
 
 const REWARD_COINS = 200;
 const REWARD_XP = 35;
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
     .single();
   if (!my || my.user_id !== user.id) return NextResponse.json({ error: "Créature invalide" }, { status: 400 });
 
-  // Opponent's strongest creature (highest level, then rarity weight)
+  // Opponent creature closest to player's level (fairer matchmaking), then rarity
   const { data: oppCreatures } = await supabase
     .from("user_creatures")
     .select("id, creature_id, level, rarity")
@@ -37,7 +38,9 @@ export async function POST(req: Request) {
   }
   const RARITY_VAL: Record<string, number> = { common: 1, rare: 2, epic: 3, legendary: 4, mythic: 5 };
   oppCreatures.sort(
-    (a, b) => b.level * 10 + (RARITY_VAL[b.rarity] ?? 0) - (a.level * 10 + (RARITY_VAL[a.rarity] ?? 0))
+    (a, b) =>
+      Math.abs(a.level - my.level) - Math.abs(b.level - my.level) ||
+      (RARITY_VAL[b.rarity] ?? 0) - (RARITY_VAL[a.rarity] ?? 0)
   );
   const opp = oppCreatures[0];
 
@@ -51,8 +54,12 @@ export async function POST(req: Request) {
 
   const won = result.winner === "p1";
   const draw = result.winner === "draw";
-  const rewardCoins = won ? REWARD_COINS : draw ? Math.floor(REWARD_COINS / 3) : 30;
-  const rewardXp = won ? REWARD_XP : draw ? Math.floor(REWARD_XP / 3) : 5;
+  const levelDiff = opp.level - my.level;
+  const challengeMult = clamp(1 + levelDiff * 0.04, 0.75, 1.35);
+  const baseCoins = won ? REWARD_COINS : draw ? Math.floor(REWARD_COINS / 3) : 30;
+  const baseXp = won ? REWARD_XP : draw ? Math.floor(REWARD_XP / 3) : 5;
+  const rewardCoins = Math.max(20, Math.round(baseCoins * challengeMult));
+  const rewardXp = Math.max(4, Math.round(baseXp * challengeMult));
 
   const { data: profile } = await supabase
     .from("profiles")

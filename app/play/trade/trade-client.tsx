@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeftRight, Send, Search, Coins, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,7 +47,7 @@ export function TradeClient({
   ucMap: Record<string, { creature_id: string; level: number; rarity: string; shiny: boolean }>;
   userMap: Record<string, string>;
 }) {
-  const router = useRouter();
+  const [tradesState, setTradesState] = useState(trades);
   const [pending, startTransition] = useTransition();
   const [tab, setTab] = useState<"new" | "incoming" | "sent">("new");
   const [searchUser, setSearchUser] = useState("");
@@ -130,9 +129,22 @@ export function TradeClient({
         return;
       }
       toast.success("Échange envoyé !");
+      setTradesState((prev) => [
+        {
+          id: j.trade?.id ?? crypto.randomUUID(),
+          sender_id: meId,
+          receiver_id: target.id,
+          sender_offer: Array.from(myOffer),
+          receiver_offer: Array.from(theirOffer),
+          sender_coins: Number(myCoinsOffer) || 0,
+          receiver_coins: Number(theirCoinsOffer) || 0,
+          status: "pending",
+          created_at: new Date().toISOString()
+        },
+        ...prev
+      ]);
       reset();
       setTab("sent");
-      router.refresh();
     });
   }
 
@@ -152,12 +164,16 @@ export function TradeClient({
         action === "accept" ? "Échange réalisé !" :
         action === "decline" ? "Échange refusé" : "Échange annulé"
       );
-      router.refresh();
+      setTradesState((prev) => prev.map((t) => (
+        t.id === id
+          ? { ...t, status: action === "accept" ? "accepted" : action === "decline" ? "declined" : "cancelled" }
+          : t
+      )));
     });
   }
 
-  const incoming = trades.filter((t) => t.receiver_id === meId && t.status === "pending");
-  const sent = trades.filter((t) => t.sender_id === meId);
+  const incoming = tradesState.filter((t) => t.receiver_id === meId && t.status === "pending");
+  const sent = tradesState.filter((t) => t.sender_id === meId);
 
   return (
     <div className="space-y-5">
@@ -300,7 +316,7 @@ export function TradeClient({
 
       {tab === "incoming" && (
         <TradesList
-          trades={trades.filter((t) => t.receiver_id === meId)}
+          trades={tradesState.filter((t) => t.receiver_id === meId)}
           ucMap={ucMap}
           userMap={userMap}
           meId={meId}
@@ -310,7 +326,7 @@ export function TradeClient({
       )}
       {tab === "sent" && (
         <TradesList
-          trades={trades.filter((t) => t.sender_id === meId)}
+          trades={tradesState.filter((t) => t.sender_id === meId)}
           ucMap={ucMap}
           userMap={userMap}
           meId={meId}

@@ -18,9 +18,9 @@ export interface BattleCreature {
   base: Creature;
 }
 
-/** Compute levelled stats. Level 1 = base. +6% per level. */
+/** Compute levelled stats. Level 1 = base. +3.5% per level for smoother scaling. */
 export function levelStats(c: Creature, level: number): CombatStats {
-  const m = 1 + (level - 1) * 0.06;
+  const m = 1 + (level - 1) * 0.035;
   return {
     hp: Math.round(c.hp * m),
     atk: Math.round(c.atk * m),
@@ -68,8 +68,8 @@ export interface BattleResult {
 
 /**
  * Deterministic but seeded-flavored simulation. Both creatures attack
- * in speed order until one falls. Critical hit chance 8%. Damage formula:
- *   dmg = max(1, round((atk * power/45 - def/2) * effectiveness * crit * jitter))
+ * in speed order until one falls. Critical hit chance 6%. Damage formula:
+ *   dmg = max(1, round(((atk * power/52 - def/2.4) + 6) * effectiveness * crit * jitter))
  */
 export function simulateBattle(p1: BattleCreature, p2: BattleCreature, seed = Date.now()): BattleResult {
   const events: BattleEvent[] = [];
@@ -100,9 +100,9 @@ export function simulateBattle(p1: BattleCreature, p2: BattleCreature, seed = Da
 
       const power = atk.base.ability.power;
       const eff = effectiveness(atk.base.element, def.base.element);
-      const crit = rand() < 0.08 ? 1.6 : 1;
-      const jitter = 0.9 + rand() * 0.2;
-      const raw = atk.stats.atk * (power / 45) - def.stats.def / 2;
+      const crit = rand() < 0.06 ? 1.4 : 1;
+      const jitter = 0.94 + rand() * 0.12;
+      const raw = atk.stats.atk * (power / 52) - def.stats.def / 2.4 + 6;
       const damage = Math.max(1, Math.round(raw * eff * crit * jitter));
       def.currentHp = Math.max(0, def.currentHp - damage);
 

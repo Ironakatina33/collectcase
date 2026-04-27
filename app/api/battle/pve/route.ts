@@ -3,12 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { CREATURES, CREATURES_BY_ID } from "@/lib/game/creatures";
 import { buildBattler, simulateBattle } from "@/lib/game/combat";
 import type { Rarity } from "@/lib/game/types";
+import { clamp } from "@/lib/utils";
 
-const REWARD_BY_DIFFICULTY: Record<string, { minLevel: number; maxLevel: number; rewardCoins: number; rewardXp: number; rarities: Rarity[] }> = {
-  easy:   { minLevel: 1,  maxLevel: 5,  rewardCoins: 30,  rewardXp: 8,  rarities: ["common", "rare"] },
-  normal: { minLevel: 6,  maxLevel: 15, rewardCoins: 75,  rewardXp: 18, rarities: ["rare", "epic"] },
-  hard:   { minLevel: 16, maxLevel: 30, rewardCoins: 180, rewardXp: 36, rarities: ["epic", "legendary"] },
-  elite:  { minLevel: 30, maxLevel: 50, rewardCoins: 420, rewardXp: 70, rarities: ["legendary", "mythic"] }
+const REWARD_BY_DIFFICULTY: Record<string, { minDelta: number; maxDelta: number; rewardCoins: number; rewardXp: number; rarities: Rarity[] }> = {
+  easy:   { minDelta: -6, maxDelta: -1, rewardCoins: 30,  rewardXp: 10, rarities: ["common", "rare"] },
+  normal: { minDelta: -2, maxDelta: 3,  rewardCoins: 75,  rewardXp: 20, rarities: ["rare", "epic"] },
+  hard:   { minDelta: 2,  maxDelta: 8,  rewardCoins: 180, rewardXp: 38, rarities: ["epic", "legendary"] },
+  elite:  { minDelta: 6,  maxDelta: 14, rewardCoins: 420, rewardXp: 74, rarities: ["legendary", "mythic"] }
 };
 
 export async function POST(req: Request) {
@@ -36,9 +37,11 @@ export async function POST(req: Request) {
   // Pick a random foe with rarity matching difficulty
   const pool = CREATURES.filter((c) => cfg.rarities.includes(c.rarity));
   const foeBase = pool[Math.floor(Math.random() * pool.length)];
-  const foeLevel = Math.max(1, Math.min(100,
-    Math.floor(cfg.minLevel + Math.random() * (cfg.maxLevel - cfg.minLevel))
-  ));
+  const foeLevel = clamp(
+    Math.floor(uc.level + cfg.minDelta + Math.random() * (cfg.maxDelta - cfg.minDelta + 1)),
+    1,
+    100
+  );
 
   const me = buildBattler(uc.id, myBase.id, uc.level);
   const foe = buildBattler("foe", foeBase.id, foeLevel);
@@ -47,8 +50,12 @@ export async function POST(req: Request) {
   // Rewards
   const won = result.winner === "p1";
   const draw = result.winner === "draw";
-  const rewardCoins = won ? cfg.rewardCoins : draw ? Math.floor(cfg.rewardCoins / 3) : Math.floor(cfg.rewardCoins / 5);
-  const rewardXp = won ? cfg.rewardXp : draw ? Math.floor(cfg.rewardXp / 3) : 2;
+  const levelDiff = foeLevel - uc.level;
+  const challengeMult = clamp(1 + levelDiff * 0.04, 0.75, 1.35);
+  const baseCoins = won ? cfg.rewardCoins : draw ? Math.floor(cfg.rewardCoins / 3) : Math.floor(cfg.rewardCoins / 5);
+  const baseXp = won ? cfg.rewardXp : draw ? Math.floor(cfg.rewardXp / 3) : 2;
+  const rewardCoins = Math.max(8, Math.round(baseCoins * challengeMult));
+  const rewardXp = Math.max(2, Math.round(baseXp * challengeMult));
 
   // Apply XP & level for the participating creature, profile XP/coins
   const { data: profile } = await supabase

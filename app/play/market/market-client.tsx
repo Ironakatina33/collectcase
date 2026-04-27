@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Coins, ShoppingCart, Tag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,10 @@ export function MarketClient({
   myCards: MyCard[];
   coins: number;
 }) {
-  const router = useRouter();
+  const [coinsState, setCoinsState] = useState(coins);
+  const [listingsState, setListingsState] = useState(listings);
+  const [myListingsState, setMyListingsState] = useState(myListings);
+  const [myCardsState, setMyCardsState] = useState(myCards);
   const [tab, setTab] = useState<"buy" | "sell" | "mine">("buy");
   const [rarityFilter, setRarityFilter] = useState<Rarity | "all">("all");
   const [pending, startTransition] = useTransition();
@@ -55,13 +57,13 @@ export function MarketClient({
   const [price, setPrice] = useState("");
 
   const filtered = useMemo(() => {
-    let base = listings;
+    let base = listingsState;
     if (rarityFilter !== "all") base = base.filter((l) => l.rarity === rarityFilter);
     return base;
-  }, [listings, rarityFilter]);
+  }, [listingsState, rarityFilter]);
 
   function buy(listing: Listing) {
-    if (coins < listing.price) {
+    if (coinsState < listing.price) {
       toast.error("Pièces insuffisantes");
       return;
     }
@@ -77,7 +79,19 @@ export function MarketClient({
         return;
       }
       toast.success("Carte achetée !");
-      router.refresh();
+      setCoinsState((c) => c - listing.price);
+      setListingsState((prev) => prev.filter((l) => l.id !== listing.id));
+      setMyCardsState((prev) => [
+        ...prev,
+        {
+          id: listing.user_creature_id,
+          creature_id: listing.creature_id,
+          rarity: listing.rarity,
+          level: listing.level,
+          shiny: false,
+          locked: false
+        }
+      ]);
     });
   }
 
@@ -94,7 +108,21 @@ export function MarketClient({
         return;
       }
       toast.success("Annonce retirée");
-      router.refresh();
+      const cancelled = myListingsState.find((l) => l.id === id);
+      if (cancelled) {
+        setMyCardsState((prev) => [
+          ...prev,
+          {
+            id: cancelled.user_creature_id,
+            creature_id: cancelled.creature_id,
+            rarity: cancelled.rarity,
+            level: cancelled.level,
+            shiny: false,
+            locked: false
+          }
+        ]);
+      }
+      setMyListingsState((prev) => prev.filter((l) => l.id !== id));
     });
   }
 
@@ -114,21 +142,37 @@ export function MarketClient({
         return;
       }
       toast.success("Carte mise en vente !");
+      const listing: Listing = {
+        id: j.listing?.id ?? crypto.randomUUID(),
+        seller_id: "me",
+        user_creature_id: listDialog.id,
+        creature_id: listDialog.creature_id,
+        rarity: listDialog.rarity,
+        level: listDialog.level,
+        price: p,
+        created_at: new Date().toISOString(),
+        status: "active"
+      };
+      setMyListingsState((prev) => [listing, ...prev]);
+      setMyCardsState((prev) => prev.filter((c) => c.id !== listDialog.id));
       setListDialog(null);
       setPrice("");
-      router.refresh();
     });
   }
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-5 sm:p-7 aurora-strip">
+        <div className="absolute -top-16 -right-12 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <div className="absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
+        <div className="relative flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl md:text-4xl font-bold">Marché</h1>
           <p className="text-sm text-muted-foreground">Achète et vends des créatures avec d'autres dresseurs.</p>
         </div>
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-amber-200 inline-flex items-center gap-1.5">
-          <Coins className="h-4 w-4" /> {formatNumber(coins)} pièces
+          <Coins className="h-4 w-4" /> {formatNumber(coinsState)} pièces
+        </div>
         </div>
       </header>
 
@@ -136,7 +180,7 @@ export function MarketClient({
       <div className="inline-flex rounded-lg border border-white/10 p-1 bg-white/[0.02]">
         <TabBtn active={tab === "buy"} onClick={() => setTab("buy")}>Acheter</TabBtn>
         <TabBtn active={tab === "sell"} onClick={() => setTab("sell")}>Vendre</TabBtn>
-        <TabBtn active={tab === "mine"} onClick={() => setTab("mine")}>Mes annonces ({myListings.length})</TabBtn>
+        <TabBtn active={tab === "mine"} onClick={() => setTab("mine")}>Mes annonces ({myListingsState.length})</TabBtn>
       </div>
 
       {tab === "buy" && (
@@ -167,8 +211,8 @@ export function MarketClient({
                     <div className="text-xs text-muted-foreground">par {l.seller_username}</div>
                     <Button
                       size="sm"
-                      variant={coins >= l.price ? "gold" : "outline"}
-                      disabled={pending || coins < l.price}
+                      variant={coinsState >= l.price ? "gold" : "outline"}
+                      disabled={pending || coinsState < l.price}
                       onClick={() => buy(l)}
                       className="w-full"
                     >
@@ -184,7 +228,7 @@ export function MarketClient({
 
       {tab === "sell" && (
         <>
-          {myCards.length === 0 ? (
+          {myCardsState.length === 0 ? (
             <Card>
               <CardContent className="py-10 text-center text-muted-foreground">
                 <Tag className="h-10 w-10 mx-auto mb-3" />
@@ -193,7 +237,7 @@ export function MarketClient({
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 justify-items-center">
-              {myCards.map((c) => {
+              {myCardsState.map((c) => {
                 const base = CREATURES_BY_ID[c.creature_id]!;
                 return (
                   <div key={c.id} className="space-y-2 text-center">
@@ -214,7 +258,7 @@ export function MarketClient({
 
       {tab === "mine" && (
         <>
-          {myListings.length === 0 ? (
+          {myListingsState.length === 0 ? (
             <Card>
               <CardContent className="py-10 text-center text-muted-foreground">
                 Tu n'as aucune annonce active.
@@ -222,7 +266,7 @@ export function MarketClient({
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 justify-items-center">
-              {myListings.map((l) => {
+              {myListingsState.map((l) => {
                 const c = CREATURES_BY_ID[l.creature_id]!;
                 return (
                   <div key={l.id} className="space-y-2 text-center">
