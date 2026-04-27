@@ -1,69 +1,145 @@
-# Mythara — Web Game Collection / Cases / PvP
+# Mythara
 
-Jeu web original inspiré des mécaniques de collection, ouverture de coffres, échanges et combat compétitif.
+> Creature collecting web game with case opening, PvE/PvP combat, trading, and market economy.
 
-## Stack
+Mythara is a free-to-play browser game built with `Next.js` + `Supabase`.  
+The project focuses on a smooth progression loop: open cases, grow your collection, battle, trade, and climb the leaderboard.
 
-- `Next.js 14` + `TypeScript` + `Tailwind`
-- `Supabase` (Auth + Postgres + RLS)
-- Déploiement gratuit sur `Vercel`
+---
 
-## Fonctionnalités implémentées
+## Highlights
 
-- Système de compte (inscription / connexion)
-- Dashboard joueur avec récompense quotidienne
-- Ouverture de coffres avec animation type gambling + système de pity
-- Collection (Mythadex), filtres, sélection multiple, vente en masse
-- Combat PvE + PvP simulé tour par tour avec logs
-- Marketplace (mise en vente, achat, annulation)
-- Échanges joueur ↔ joueur (proposition, acceptation RPC, refus, annulation)
-- Profil joueur + classements
+- Account system (`register` / `login`) with Supabase Auth
+- Case opening with rarity odds and mythic pity system
+- Collection management with filters and bulk sell
+- PvE and PvP battle simulation with detailed logs
+- Player marketplace (list, buy, cancel)
+- Direct player trades (create, accept, decline, cancel)
+- Leaderboard + profile stats + daily reward
 
-## Lancer en local
+---
+
+## Tech Stack
+
+- `Next.js 14` (App Router)
+- `TypeScript`
+- `Tailwind CSS`
+- `Supabase` (PostgreSQL, Auth, RLS, RPC)
+- `Vercel` (deployment)
+
+---
+
+## Project Structure
+
+```txt
+app/
+  (auth)/
+  api/
+  play/
+components/
+  game/
+  layout/
+  ui/
+lib/
+  game/
+  supabase/
+supabase/
+  schema.sql
+```
+
+---
+
+## Quick Start (Local)
+
+### 1) Install
 
 ```bash
 npm install
+```
+
+### 2) Env vars
+
+Create `.env.local` at project root:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+### 3) Prepare database
+
+- Open Supabase SQL Editor
+- Run `supabase/schema.sql`
+
+### 4) Run app
+
+```bash
 npm run dev
 ```
 
-App disponible sur `http://localhost:3000`.
+Open `http://localhost:3000`.
 
-## Configuration Supabase (gratuit)
+---
 
-1. Créer un projet sur `https://supabase.com` (plan free).
-2. Dans le SQL Editor, exécuter le contenu de `supabase/schema.sql`.
-3. Copier `.env.example` vers `.env.local` puis renseigner :
+## Deploy on Vercel (Free)
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-```
+1. Push project to GitHub
+2. Import repository in Vercel
+3. Add the 3 env vars in Vercel project settings:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+4. Deploy
 
-> `SUPABASE_SERVICE_ROLE_KEY` ne doit jamais être exposée côté client.
+For Supabase Auth URL settings:
 
-## Déploiement Vercel (gratuit)
+- `Site URL`: your Vercel domain (`https://your-app.vercel.app`)
+- `Redirect URLs`: same domain (and custom domain if used)
 
-1. Push le repo sur GitHub.
-2. Créer un projet sur `https://vercel.com`, importer le repo.
-3. Ajouter les variables d’environnement (mêmes clés que `.env.local`).
-4. Déployer.
+---
 
-À chaque push sur la branche principale, Vercel redéploie automatiquement.
+## Scripts
 
-## Notes importantes
+- `npm run dev` → start dev server
+- `npm run build` → production build
+- `npm run start` → run production build locally
+- `npm run lint` → lint check
 
-- Le thème est **100% original** (univers Mythara), aucune ressource Pokémon.
-- Les mécaniques de “case opening” restent dans un cadre jeu fictif sans argent réel.
-- Build validé :
+---
+
+## Security Notes
+
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` in client code
+- Rotate leaked keys immediately in Supabase dashboard
+- Keep secrets in `.env.local` (local) and Vercel env settings (cloud)
+
+---
+
+## Gameplay Notes
+
+- Mythara is an original universe and creature roster
+- Case opening is fictional in-game economy (no real-money gambling integration)
+- Drop rates and progression can be tuned directly in `lib/game/cases.ts`
+
+---
+
+## Build Status
+
+Current production build command:
 
 ```bash
 npx --no-install next build
 ```
 
-## Scripts
+Build completes successfully.
 
-- `npm run dev` : développement
-- `npm run build` : build production
-- `npm run start` : run production local
-- `npm run lint` : lint Next.js
+---
+
+## Roadmap Ideas
+
+- Seasonal events and limited-time cases
+- Ranked PvP matchmaking
+- Guilds / teams
+- Cosmetic skins and profile banners
+- Quest system and battle pass
