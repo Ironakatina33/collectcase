@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 230 30% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 230 25% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 230 25% 9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 280 90% 65%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 230 20% 14%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 230 20% 14%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 280 90% 65%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 230 20% 18%;
+    --input: 230 20% 18%;
+    --ring: 280 90% 65%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html, body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(168, 85, 247, 0.18), transparent 60%),
+      radial-gradient(800px 500px at -10% 20%, rgba(58, 165, 255, 0.14), transparent 60%),
+      radial-gradient(900px 600px at 50% 110%, rgba(236, 72, 153, 0.12), transparent 60%),
+      hsl(var(--background));
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .card-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .card-shine::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 4s linear infinite;
+    pointer-events: none;
+  }
+
+  /* Rarity glow */
+  .glow-common { box-shadow: 0 0 0 1px rgba(156,163,175,0.5), 0 0 20px rgba(156,163,175,0.15); }
+  .glow-rare { box-shadow: 0 0 0 1px rgba(59,130,246,0.6), 0 0 24px rgba(59,130,246,0.35); }
+  .glow-epic { box-shadow: 0 0 0 1px rgba(168,85,247,0.7), 0 0 28px rgba(168,85,247,0.45); }
+  .glow-legendary { box-shadow: 0 0 0 1px rgba(245,158,11,0.8), 0 0 34px rgba(245,158,11,0.55); }
+  .glow-mythic { box-shadow: 0 0 0 1px rgba(236,72,153,0.9), 0 0 40px rgba(236,72,153,0.65); }
+
+  .gradient-text {
+    background: linear-gradient(90deg, #c084fc, #f472b6, #fbbf24);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { scrollbar-width: none; }
+
+  /* Holographic effect for legendary/mythic cards */
+  .holo {
+    background-image:
+      linear-gradient(115deg, transparent 25%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0.05) 55%, transparent 75%),
+      linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.25), rgba(245,158,11,0.25));
+    background-size: 200% 200%, 100% 100%;
+    animation: shimmer 6s linear infinite;
+  }
+}
