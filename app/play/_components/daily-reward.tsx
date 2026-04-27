@@ -42,19 +42,20 @@ export function DailyRewardCard({ lastDaily }: Props) {
   };
 
   return (
-    <Card className="overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-fuchsia-500/10 pointer-events-none" />
+    <Card className="overflow-hidden relative glass-panel border-amber-300/20">
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/15 via-transparent to-fuchsia-500/10 pointer-events-none" />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Gift className="h-5 w-5 text-amber-300" /> Récompense quotidienne
         </CardTitle>
+        <p className="text-xs text-muted-foreground">Connecte-toi chaque jour pour booster ta progression.</p>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-white/[0.04] px-3 py-2 inline-flex items-center gap-1.5 text-amber-300 font-bold">
+          <div className="rounded-lg border border-amber-300/30 bg-amber-500/10 px-3 py-2 inline-flex items-center gap-1.5 text-amber-200 font-bold">
             <Coins className="h-4 w-4" /> +{REWARD_COINS}
           </div>
-          <div className="rounded-lg bg-white/[0.04] px-3 py-2 inline-flex items-center gap-1.5 text-cyan-300 font-bold">
+          <div className="rounded-lg border border-cyan-300/30 bg-cyan-500/10 px-3 py-2 inline-flex items-center gap-1.5 text-cyan-200 font-bold">
             <Sparkles className="h-4 w-4" /> +{REWARD_GEMS}
           </div>
         </div>

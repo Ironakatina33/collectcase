@@ -83,21 +83,31 @@ export function CasesClient({
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold">Coffres</h1>
-          <p className="text-sm text-muted-foreground">Choisis ton coffre, tente ta chance.</p>
+    <div className="space-y-7">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent p-5 sm:p-7 aurora-strip">
+        <div className="absolute -top-16 -right-12 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
+        <div className="absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
+
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl md:text-5xl font-bold">Coffres Mythara</h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
+              Choisis ton coffre, lance l'ouverture et vise le jackpot mythique.
+            </p>
+          </div>
+          <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-amber-200 inline-flex items-center gap-2 font-semibold">
+            <Coins className="h-4 w-4" /> {formatNumber(coins)} pièces
+          </div>
         </div>
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-amber-200 inline-flex items-center gap-1.5">
-          <Coins className="h-4 w-4" /> {formatNumber(coins)} pièces
-        </div>
-      </header>
+      </section>
 
       {/* Case selector */}
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         {cases.map((c) => (
-          <div key={c.id} className="shrink-0 text-center space-y-1">
+          <div key={c.id} className={cn(
+            "shrink-0 text-center space-y-1 rounded-2xl p-1.5 transition-colors",
+            selectedId === c.id ? "bg-white/[0.05]" : "bg-transparent"
+          )}>
             <CaseBox case={c} size="sm" selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} />
             <div className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
               <Coins className="h-3 w-3 text-amber-300" /> {formatNumber(c.priceCoins)}
@@ -108,7 +118,7 @@ export function CasesClient({
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Detail */}
-        <Card className="lg:col-span-2 overflow-hidden relative">
+        <Card className="lg:col-span-2 overflow-hidden relative glass-panel border-white/15">
           <div
             className="absolute inset-0 opacity-30 pointer-events-none"
             style={{
@@ -133,7 +143,7 @@ export function CasesClient({
                     onClick={() => open(1)}
                     disabled={pending || coins < current.priceCoins}
                   >
-                    Ouvrir 1× <Coins className="h-4 w-4" /> {formatNumber(current.priceCoins)}
+                    {pending ? "Ouverture..." : "Ouvrir 1×"} <Coins className="h-4 w-4" /> {formatNumber(current.priceCoins)}
                   </Button>
                   <Button
                     size="lg"
@@ -141,16 +151,19 @@ export function CasesClient({
                     onClick={() => open(5)}
                     disabled={pending || coins < current.priceCoins * 5}
                   >
-                    Ouvrir 5× <Coins className="h-4 w-4" /> {formatNumber(current.priceCoins * 5)}
+                    {pending ? "Ouverture..." : "Ouvrir 5×"} <Coins className="h-4 w-4" /> {formatNumber(current.priceCoins * 5)}
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Astuce : les ouvertures ×5 accélèrent ta collection et augmentent tes chances de drop rare sur la session.
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Odds */}
-        <Card>
+        <Card className="glass-panel">
           <CardContent className="p-5 space-y-3">
             <h3 className="font-semibold flex items-center gap-2"><Sparkles className="h-4 w-4 text-fuchsia-300" /> Chances de drop</h3>
             <div className="space-y-2">
@@ -258,7 +271,7 @@ function RevealView({ drops, onClose }: { drops: Drop[]; onClose: () => void }) 
       >
         Fermer <X className="h-4 w-4" />
       </button>
-      <div className="rounded-2xl border border-white/10 bg-card/80 backdrop-blur p-6">
+      <div className="rounded-3xl border border-white/15 bg-card/80 backdrop-blur-xl p-6 glass-panel">
         <h2 className="font-display text-2xl text-center mb-1 gradient-text">
           {drops.length === 1 ? "Tu as obtenu…" : `Tu as obtenu ${drops.length} créatures !`}
         </h2>
